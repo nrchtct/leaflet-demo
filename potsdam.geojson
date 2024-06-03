@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          13.0963696,
+          52.4245832
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Heilandskirche",
+        "photo": "IMG_4428.jpeg"
+      },
+      "type": "Feature",
+      "id": 0
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          13.0639041,
+          52.3790583
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "name": "Einsteinturm",
+        "photo": "IMG_4440.jpeg"
+      },
+      "type": "Feature",
+      "id": 1
+    }
+  ]
+}

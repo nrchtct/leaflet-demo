@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>leaflet demo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+<div id="map"></div>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+#map { 
+    height: 100vh;
+    width: 100vw;
+}
+</style>
+<script>
+
+    // Initialize the map
+    var map = L.map('map');
+
+    // Add a tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'potsdam.geojson', true);
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var geojson = JSON.parse(xhr.responseText);
+                // var geojsonlayer = L.geoJSON(geojson).addTo(map);
+
+                var geojsonlayer = L.geoJSON(geojson, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.photo) {
+                            var popupContent = "<strong>" + feature.properties.name + "</strong><br>" +
+                                "<img src='" + feature.properties.photo + "' alt='Photo' style='width: 10vw; height: auto;'>";
+                            layer.bindPopup(popupContent);
+                        }
+                    }
+                }).addTo(map);
+
+
+                map.fitBounds(geojsonlayer.getBounds());
+            } else console.error('Failed to load GeoJSON. Status:', xhr.status);            
+        }
+    };
+
+    xhr.send();
+
+</script>

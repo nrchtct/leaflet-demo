@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MapLibre Demo</title>
+    <link href="https://unpkg.com/maplibre-gl@1.15.3/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@1.15.3/dist/maplibre-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #map { 
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Initialize the map
+        var map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://raw.githubusercontent.com/go2garret/maps/main/src/assets/json/openStreetMap.json',
+            center: [13.082275032219854, 52.40514247896371], // Initial center position
+            zoom: 10 // Initial zoom level
+        });
+
+        // Add navigation controls to the map
+        map.addControl(new maplibregl.NavigationControl());
+
+        // Load GeoJSON data
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'potsdam.geojson', true);
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var geojson = JSON.parse(xhr.responseText);
+
+                    map.on('load', function () {
+                        // Add GeoJSON source
+                        map.addSource('geojson-data', {
+                            'type': 'geojson',
+                            'data': geojson
+                        });
+
+                        // Add a layer showing the GeoJSON points
+                        map.addLayer({
+                            'id': 'geojson-layer',
+                            'type': 'circle',
+                            'source': 'geojson-data',
+                            'paint': {
+                                'circle-radius': 6,
+                                'circle-color': '#B42222'
+                            }
+                        });
+
+                        // Add popups
+                        map.on('click', 'geojson-layer', function (e) {
+                            var coordinates = e.features[0].geometry.coordinates.slice();
+                            var properties = e.features[0].properties;
+                            var popupContent = "<strong>" + properties.name + "</strong><br>" +
+                                "<img src='" + properties.photo + "' alt='Photo' style='width: 10vw; height: auto;'>";
+
+                            new maplibregl.Popup()
+                                .setLngLat(coordinates)
+                                .setHTML(popupContent)
+                                .addTo(map);
+                        });
+
+                        // Change the cursor to a pointer when the mouse is over the points
+                        map.on('mouseenter', 'geojson-layer', function () {
+                            map.getCanvas().style.cursor = 'pointer';
+                        });
+
+                        // Change it back to a pointer when it leaves
+                        map.on('mouseleave', 'geojson-layer', function () {
+                            map.getCanvas().style.cursor = '';
+                        });
+
+                        // Fit map to bounds
+                        var bounds = new maplibregl.LngLatBounds();
+                        geojson.features.forEach(function (feature) {
+                            bounds.extend(feature.geometry.coordinates);
+                        });
+                        map.fitBounds(bounds, { padding: 20 });
+                    });
+                } else {
+                    console.error('Failed to load GeoJSON. Status:', xhr.status);
+                }
+            }
+        };
+
+        xhr.send();
+    </script>
+</body>
+</html>
